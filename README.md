@@ -47,10 +47,40 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 
 ```
 resdap/
-├── src/                    # Source code for each component of the pipeline
-├── tests/                  # Comprehensive test suite
-├── config/                 # Configuration files
-├── scripts/                # Utility scripts for setup and execution
-├── infrastructure/         # CloudFormation templates
-└── docs/                   # Additional documentation
+├── README.md
+├── requirements.txt
+├── .gitignore
+├── config/
+│   └── config.yml
+├── src/
+│   ├── data_ingestion/
+│   │   ├── __init__.py
+│   │   └── kinesis_producer.py
+│   ├── data_processing/
+│   │   ├── __init__.py
+│   │   └── sentiment_analyzer.py
+│   ├── data_storage/
+│   │   ├── __init__.py
+│   │   ├── s3_manager.py
+│   │   └── dynamodb_manager.py
+│   ├── data_warehousing/
+│   │   ├── __init__.py
+│   │   └── redshift_manager.py
+│   ├── visualization/
+│   │   ├── __init__.py
+│   │   └── quicksight_dashboard.py
+│   └── utils/
+│       ├── __init__.py
+│       └── helpers.py
+├── tests/
+│   ├── __init__.py
+│   ├── test_data_ingestion.py
+│   ├── test_data_processing.py
+│   ├── test_data_storage.py
+│   └── test_data_warehousing.py
+├── scripts/
+│   ├── setup_infrastructure.sh
+│   └── run_pipeline.sh
+└── infrastructure/
+    └── cloudformation_template.yml
 ```
