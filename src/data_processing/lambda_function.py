@@ -1,16 +1,24 @@
 import json
 import base64
+import boto3
+import uuid
+
+dynamodb = boto3.resource('dynamodb')
+table = dynamodb.Table('SocialMediaSentiments')
 
 def lambda_handler(event, context):
     for record in event['Records']:
-        # Kinesis data is base64 encoded
+        # Decode and load the Kinesis data
         payload = base64.b64decode(record['kinesis']['data'])
         data = json.loads(payload)
         
-        # Simple processing: Convert sentiment to uppercase
-        data['sentiment'] = data['sentiment'].upper()
+        # Generate a unique ID for the DynamoDB item
+        data['Id'] = str(uuid.uuid4())
         
-        print(f"Processed record: {json.dumps(data)}")
+        # Write the item to DynamoDB
+        table.put_item(Item=data)
+        
+        print(f"Processed and stored record: {json.dumps(data)}")
     
     return {
         'statusCode': 200,

@@ -1,0 +1,1 @@
+{"errorMessage": "Unable to import module 'dynamodb_to_redshift': No module named 'dynamodb_to_redshift'", "errorType": "Runtime.ImportModuleError", "stackTrace": []}
