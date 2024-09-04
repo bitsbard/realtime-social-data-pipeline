@@ -1,1 +1,1 @@
-{"errorMessage": "Unable to import module 'dynamodb_to_redshift': No module named 'dynamodb_to_redshift'", "errorType": "Runtime.ImportModuleError", "stackTrace": []}
+{"statusCode": 200, "body": "\"Successfully inserted 3055 items into Redshift\""}
