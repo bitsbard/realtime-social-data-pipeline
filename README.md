@@ -86,7 +86,7 @@ resdap/
 ```
 ## Data Visualization
 
-![pie_chart](pie_chart.png)
+![pie_chart](pie_chart_.png)
 
 ![line_chart](line_chart.png)
 
