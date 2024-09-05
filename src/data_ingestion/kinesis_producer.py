@@ -3,10 +3,6 @@ import json
 import random
 import time
 
-# Initialize Kinesis client
-kinesis = boto3.client('kinesis')
-
-# Function to generate mock social media data
 def generate_data():
     platforms = ['Twitter', 'Facebook', 'Instagram']
     sentiments = ['positive', 'negative', 'neutral']
@@ -18,13 +14,32 @@ def generate_data():
         'timestamp': int(time.time())
     }
 
-# Main loop to continuously produce data
-while True:
-    data = generate_data()
-    response = kinesis.put_record(
-        StreamName='social-media-stream',
-        Data=json.dumps(data),
-        PartitionKey=str(data['user_id'])
-    )
-    print(f"Put record in stream: {response['SequenceNumber']}")
-    time.sleep(1)  # Wait for 1 second before sending the next record
+def lambda_handler(event, context):
+    kinesis = boto3.client('kinesis')
+    
+    try:
+        data = generate_data()
+        response = kinesis.put_record(
+            StreamName='social-media-stream',
+            Data=json.dumps(data),
+            PartitionKey=str(data['user_id'])
+        )
+        print(f"Put record in stream: {response['SequenceNumber']}")
+        
+        return {
+            'statusCode': 200,
+            'body': json.dumps('Data sent to Kinesis successfully'),
+            'kinesisResponse': response
+        }
+    except Exception as e:
+        print(f"Error: {str(e)}")
+        return {
+            'statusCode': 500,
+            'body': json.dumps(f'Error sending data to Kinesis: {str(e)}')
+        }
+
+# For testing locally
+if __name__ == "__main__":
+    while True:
+        lambda_handler({}, None)
+        time.sleep(1)

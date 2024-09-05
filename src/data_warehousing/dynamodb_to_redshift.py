@@ -54,11 +54,13 @@ def lambda_handler(event, context):
 
         return {
             'statusCode': 200,
+            'transferSuccess': True,
             'body': json.dumps(f'Successfully inserted {len(items)} items into Redshift')
         }
     except Exception as e:
         print(f"An error occurred: {str(e)}")
         return {
             'statusCode': 500,
+            'transferSuccess': False,
             'body': json.dumps(f'An error occurred: {str(e)}')
         }

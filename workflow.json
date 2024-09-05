@@ -1,0 +1,35 @@
+{
+    "Comment": "Social Media Sentiment Analysis Workflow",
+    "StartAt": "ProcessKinesisData",
+    "States": {
+      "ProcessKinesisData": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-2:278647960145:function:ProcessKinesisRecords",
+        "Next": "TransferToDynamoDB"
+      },
+      "TransferToDynamoDB": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:us-east-2:278647960145:function:DynamoDBToRedshift",
+        "Next": "CheckTransferSuccess"
+      },
+      "CheckTransferSuccess": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.transferSuccess",
+            "BooleanEquals": true,
+            "Next": "SuccessState"
+          }
+        ],
+        "Default": "FailureState"
+      },
+      "SuccessState": {
+        "Type": "Succeed"
+      },
+      "FailureState": {
+        "Type": "Fail",
+        "Cause": "Data transfer failed"
+      }
+    }
+  }
+  
