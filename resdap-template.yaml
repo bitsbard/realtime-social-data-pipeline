@@ -1,0 +1,210 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation template for RESDAP (Real-time Social Data Analytics Pipeline)'
+
+Parameters:
+  RedshiftMasterUsername:
+    Type: String
+    Description: The master username for the Redshift cluster
+  RedshiftMasterUserPassword:
+    Type: String
+    NoEcho: true
+    Description: The master user password for the Redshift cluster
+  SocialMediaStreamName:
+    Type: String
+    Default: ''
+    Description: Existing Kinesis stream name (if any)
+  SocialMediaSentimentsTableName:
+    Type: String
+    Default: ''
+    Description: Existing DynamoDB table name (if any)
+
+Conditions:
+  KinesisStreamExists: !Equals 
+    - !Ref SocialMediaStreamName
+    - ''
+  DynamoDBTableExists: !Equals 
+    - !Ref SocialMediaSentimentsTableName
+    - ''
+
+Resources:
+  SocialMediaStream:
+    Type: AWS::Kinesis::Stream
+    Condition: KinesisStreamExists
+    Properties:
+      Name: !If 
+        - KinesisStreamExists
+        - !Sub "social-media-stream-${AWS::StackName}"
+        - !Ref SocialMediaStreamName
+      ShardCount: 1
+      RetentionPeriodHours: 24
+
+  SocialMediaSentimentsTable:
+    Type: AWS::DynamoDB::Table
+    Condition: DynamoDBTableExists
+    Properties:
+      TableName: !If 
+        - DynamoDBTableExists
+        - !Sub "SocialMediaSentiments-${AWS::StackName}"
+        - !Ref SocialMediaSentimentsTableName
+      AttributeDefinitions:
+        - AttributeName: Id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: Id
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+
+  RedshiftCluster:
+    Type: AWS::Redshift::Cluster
+    Properties:
+      ClusterType: single-node
+      NodeType: dc2.large
+      DBName: social_media_db
+      MasterUsername: !Ref RedshiftMasterUsername
+      MasterUserPassword: !Ref RedshiftMasterUserPassword
+      PubliclyAccessible: true
+      Port: 5439
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonKinesisFullAccess
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonRedshiftFullAccess
+
+  KinesisProducerFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: YourLambdaFunctionName
+      Handler: kinesis_producer.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: resdap-bucket
+        S3Key: kinesis_producer.zip
+      Runtime: python3.8
+      Timeout: 60
+      MemorySize: 128
+      Environment:
+        Variables:
+          KINESIS_STREAM_NAME: !If 
+            - KinesisStreamExists
+            - !Ref SocialMediaStream
+            - !Ref SocialMediaStreamName
+
+  DynamoDBToRedshiftFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: DynamoDBToRedshift
+      Handler: dynamodb_to_redshift.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        S3Bucket: resdap-bucket
+        S3Key: dynamodb_to_redshift.zip
+      Runtime: python3.8
+      Timeout: 60
+      MemorySize: 256
+      Environment:
+        Variables:
+          DYNAMODB_TABLE_NAME: !If 
+            - DynamoDBTableExists
+            - !Ref SocialMediaSentimentsTable
+            - !Ref SocialMediaSentimentsTableName
+          REDSHIFT_CLUSTER_ID: !Ref RedshiftCluster
+          REDSHIFT_DB_NAME: social_media_db
+          REDSHIFT_USERNAME: !Ref RedshiftMasterUsername
+
+  StepFunctionsExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: StepFunctionsLambdaInvoke
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:InvokeFunction
+                Resource: 
+                  - !GetAtt KinesisProducerFunction.Arn
+                  - !GetAtt DynamoDBToRedshiftFunction.Arn
+
+  SocialMediaSentimentWorkflow:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: SocialMediaSentimentWorkflow
+      RoleArn: !GetAtt StepFunctionsExecutionRole.Arn
+      DefinitionString: !Sub |
+        {
+          "Comment": "Social Media Sentiment Analysis Workflow",
+          "StartAt": "ProcessKinesisData",
+          "States": {
+            "ProcessKinesisData": {
+              "Type": "Task",
+              "Resource": "${KinesisProducerFunction.Arn}",
+              "Next": "TransferToDynamoDB"
+            },
+            "TransferToDynamoDB": {
+              "Type": "Task",
+              "Resource": "${DynamoDBToRedshiftFunction.Arn}",
+              "Next": "CheckTransferSuccess"
+            },
+            "CheckTransferSuccess": {
+              "Type": "Choice",
+              "Choices": [
+                {
+                  "Variable": "$.transferSuccess",
+                  "BooleanEquals": true,
+                  "Next": "SuccessState"
+                }
+              ],
+              "Default": "FailureState"
+            },
+            "SuccessState": {
+              "Type": "Succeed"
+            },
+            "FailureState": {
+              "Type": "Fail",
+              "Cause": "Data transfer failed"
+            }
+          }
+        }
+
+Outputs:
+  KinesisStreamName:
+    Description: Name of the Kinesis Data Stream
+    Value: !If 
+      - KinesisStreamExists
+      - !Ref SocialMediaStream
+      - !Ref SocialMediaStreamName
+
+  DynamoDBTableName:
+    Description: Name of the DynamoDB Table
+    Value: !If 
+      - DynamoDBTableExists
+      - !Ref SocialMediaSentimentsTable
+      - !Ref SocialMediaSentimentsTableName
+
+  RedshiftClusterEndpoint:
+    Description: Endpoint of the Redshift Cluster
+    Value: !GetAtt RedshiftCluster.Endpoint.Address
+
+  StepFunctionsStateMachineArn:
+    Description: ARN of the Step Functions State Machine
+    Value: !Ref SocialMediaSentimentWorkflow
+    
