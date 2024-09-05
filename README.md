@@ -43,47 +43,6 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 - Ensuring data security and compliance in cloud environments
 - Optimizing cloud resource usage and costs
 
-## Project Structure
-
-```
-resdap/
-├── README.md
-├── requirements.txt
-├── .gitignore
-├── config/
-│   └── config.yml
-├── src/
-│   ├── data_ingestion/
-│   │   ├── __init__.py
-│   │   └── kinesis_producer.py
-│   ├── data_processing/
-│   │   ├── __init__.py
-│   │   └── sentiment_analyzer.py
-│   ├── data_storage/
-│   │   ├── __init__.py
-│   │   ├── s3_manager.py
-│   │   └── dynamodb_manager.py
-│   ├── data_warehousing/
-│   │   ├── __init__.py
-│   │   └── redshift_manager.py
-│   ├── visualization/
-│   │   ├── __init__.py
-│   │   └── quicksight_dashboard.py
-│   └── utils/
-│       ├── __init__.py
-│       └── helpers.py
-├── tests/
-│   ├── __init__.py
-│   ├── test_data_ingestion.py
-│   ├── test_data_processing.py
-│   ├── test_data_storage.py
-│   └── test_data_warehousing.py
-├── scripts/
-│   ├── setup_infrastructure.sh
-│   └── run_pipeline.sh
-└── infrastructure/
-    └── cloudformation_template.yml
-```
 ## Data Visualization
 
 ![pie_chart](pie_chart_.png)
