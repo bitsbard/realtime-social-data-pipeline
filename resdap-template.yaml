@@ -17,6 +17,10 @@ Parameters:
     Type: String
     Default: ''
     Description: Existing DynamoDB table name (if any)
+  ExistingRedshiftClusterId:
+    Type: String
+    Default: 'social-media-cluster'
+    Description: The ID of the existing Redshift cluster to use
 
 Conditions:
   KinesisStreamExists: !Equals 
@@ -107,7 +111,7 @@ Resources:
   KinesisProducerFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: YourLambdaFunctionName
+      FunctionName: !Sub "${AWS::StackName}-KinesisProducer"
       Handler: kinesis_producer.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
@@ -126,7 +130,7 @@ Resources:
   DynamoDBToRedshiftFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: DynamoDBToRedshift
+      FunctionName: !Sub "${AWS::StackName}-DynamoDBToRedshift"
       Handler: dynamodb_to_redshift.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
@@ -141,7 +145,7 @@ Resources:
             - DynamoDBTableExists
             - !Ref SocialMediaSentimentsTable
             - !Ref SocialMediaSentimentsTableName
-          REDSHIFT_CLUSTER_ID: !Ref RedshiftCluster
+          REDSHIFT_CLUSTER_ID: !Ref ExistingRedshiftClusterId
           REDSHIFT_DB_NAME: social_media_db
           REDSHIFT_USERNAME: !Ref RedshiftMasterUsername
 
@@ -223,9 +227,9 @@ Outputs:
       - !Ref SocialMediaSentimentsTable
       - !Ref SocialMediaSentimentsTableName
 
-  RedshiftClusterEndpoint:
-    Description: Endpoint of the Redshift Cluster
-    Value: !GetAtt RedshiftCluster.Endpoint.Address
+  RedshiftClusterId:
+    Description: ID of the Redshift Cluster
+    Value: !Ref ExistingRedshiftClusterId
 
   StepFunctionsStateMachineArn:
     Description: ARN of the Step Functions State Machine
