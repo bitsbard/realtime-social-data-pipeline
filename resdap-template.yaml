@@ -55,15 +55,38 @@ Resources:
       BillingMode: PAY_PER_REQUEST
 
   RedshiftCluster:
-    Type: AWS::Redshift::Cluster
+    Type: Custom::RedshiftClusterCheck
     Properties:
-      ClusterType: single-node
-      NodeType: dc2.large
-      DBName: social_media_db
-      MasterUsername: !Ref RedshiftMasterUsername
-      MasterUserPassword: !Ref RedshiftMasterUserPassword
-      PubliclyAccessible: true
-      Port: 5439
+      ServiceToken: !GetAtt RedshiftClusterCheckFunction.Arn
+      ExistingClusterId: !Ref ExistingRedshiftClusterId
+
+  RedshiftClusterCheckFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Code:
+        ZipFile: |
+          import boto3
+          import cfnresponse
+
+          def handler(event, context):
+            redshift = boto3.client('redshift')
+            cluster_id = event['ResourceProperties']['ExistingClusterId']
+            
+            try:
+              response = redshift.describe_clusters(ClusterIdentifier=cluster_id)
+              if response['Clusters'][0]['ClusterStatus'] == 'available':
+                cfnresponse.send(event, context, cfnresponse.SUCCESS, {'ClusterId': cluster_id})
+              else:
+                cfnresponse.send(event, context, cfnresponse.FAILED, {'Reason': f'Cluster {cluster_id} is not in available state'})
+            except redshift.exceptions.ClusterNotFoundFault:
+              cfnresponse.send(event, context, cfnresponse.FAILED, {'Reason': f'Cluster {cluster_id} not found'})
+            except Exception as e:
+              cfnresponse.send(event, context, cfnresponse.FAILED, {'Reason': str(e)})
+
+      Runtime: python3.8
+      Timeout: 30
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
