@@ -50,3 +50,7 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 ![line_chart](line_chart.png)
 
 ![bar_chart](bar_chart.png)
+
+## Techincal Summary
+
+This project involves creating an ETL pipeline to transfer data from an Amazon RDS PostgreSQL database to Amazon Redshift. The pipeline will need to extract data from the source PostgreSQL database, potentially transform it to fit Redshift's columnar storage model, and efficiently load it into Redshift. Implementation will likely involve AWS services such as Data Pipeline or AWS Glue for orchestration, possibly utilizing Python with libraries like psycopg2 for PostgreSQL connectivity and the AWS SDK for Redshift operations. The solution must ensure data consistency, handle potential schema changes, and be optimized for performance to meet the hourly update requirement while minimizing data transfer costs and Redshift compute time.
