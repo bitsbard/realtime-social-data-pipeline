@@ -7,7 +7,7 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 ## Technical Stack
 
 - **Data Ingestion:** AWS Kinesis Data Streams
-- **Data Processing:** AWS Lambda, Amazon Kinesis Data Analytics
+- **Data Processing:** AWS Lambda
 - **Data Storage:** Amazon S3 (data lake), Amazon DynamoDB (NoSQL)
 - **Data Warehousing:** Amazon Redshift
 - **Data Visualization:** Amazon QuickSight
