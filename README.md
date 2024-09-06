@@ -1,4 +1,4 @@
-# Real-time Social Data Analytics Pipeline (In the process of building)
+# Real-time Social Data Analytics Pipeline
 
 ## Project Overview
 
