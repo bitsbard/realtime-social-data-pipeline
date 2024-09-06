@@ -21,7 +21,7 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 
 1. **Real-time Data Streaming:** Ingest high-volume social media data using Kinesis Data Streams.
 2. **Serverless Architecture:** Utilize AWS Lambda for scalable, event-driven data processing.
-3. **Sentiment Analysis:** Perform real-time sentiment analysis on incoming social media posts.
+3. **Sentiment Analysis:** Perform real-time sentiment analysis on incoming social media posts. (Mock data)
 4. **Data Lake Implementation:** Store raw and processed data in a well-organized S3-based data lake.
 5. **NoSQL and Data Warehouse Integration:** Use DynamoDB for rapid access to recent data and Redshift for complex analytical queries.
 6. **Real-time Dashboarding:** Create dynamic, real-time dashboards using Amazon QuickSight.
