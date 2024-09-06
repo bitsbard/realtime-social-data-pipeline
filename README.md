@@ -14,7 +14,7 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 - **Workflow Orchestration:** AWS Step Functions
 - **Infrastructure as Code:** AWS CloudFormation
 - **CI/CD:** AWS CodePipeline, AWS CodeBuild
-- **Monitoring and Logging:** Amazon CloudWatch, AWS X-Ray
+- **Monitoring:** Amazon CloudWatch
 - **Security:** AWS IAM, AWS KMS
 
 ## Key Features
@@ -28,7 +28,7 @@ Real-time Social Data Analytics Pipeline is an advanced data engineering project
 7. **Automated Workflow:** Orchestrate complex data workflows using Step Functions.
 8. **Infrastructure as Code:** Define and version entire infrastructure using CloudFormation.
 9. **Continuous Integration and Deployment:** Implement CI/CD pipelines for both infrastructure and application code.
-10. **Comprehensive Monitoring:** Set up detailed monitoring and alerting using CloudWatch and X-Ray.
+10. **Comprehensive Monitoring:** Set up detailed monitoring and alerting using CloudWatch.
 
 ## Demonstrated Skills
 
