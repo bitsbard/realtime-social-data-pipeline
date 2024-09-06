@@ -1,0 +1,10 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.8
+  build:
+    commands:
+      - aws cloudformation deploy --template-file resdap-template.yaml --stack-name resdap-stack --parameter-overrides RedshiftMasterUsername=admin RedshiftMasterUserPassword=$REDSHIFT_PASSWORD --capabilities CAPABILITY_IAM
+      
