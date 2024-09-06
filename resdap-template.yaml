@@ -233,5 +233,5 @@ Outputs:
 
   StepFunctionsStateMachineArn:
     Description: ARN of the Step Functions State Machine
-    Value: !Ref SocialMediaSentimentWorkflow${Timestamp}
+    Value: !Ref SocialMediaSentimentWorkflow
     
