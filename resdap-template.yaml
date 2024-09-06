@@ -68,7 +68,7 @@ Resources:
     Type: AWS::Lambda::Function
     Properties:
       Handler: index.handler
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRoleRandom.Arn
       Code:
         ZipFile: |
           import boto3
@@ -92,7 +92,7 @@ Resources:
       Runtime: python3.8
       Timeout: 30
 
-  LambdaExecutionRole:
+  LambdaExecutionRoleRandom:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -111,9 +111,9 @@ Resources:
   KinesisProducerFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-KinesisProducer"
+      FunctionName: !Sub "${AWS::StackName}-KinesisProducer-${AWS::Region}-${AWS::AccountId}"
       Handler: kinesis_producer.lambda_handler
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRoleRandom.Arn
       Code:
         S3Bucket: resdap-bucket
         S3Key: kinesis_producer.zip
@@ -130,9 +130,9 @@ Resources:
   DynamoDBToRedshiftFunction:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: !Sub "${AWS::StackName}-DynamoDBToRedshift"
+      FunctionName: !Sub "${AWS::StackName}-DynamoDBToRedshift-${AWS::Region}-${AWS::AccountId}"
       Handler: dynamodb_to_redshift.lambda_handler
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Role: !GetAtt LambdaExecutionRoleRandom.Arn
       Code:
         S3Bucket: resdap-bucket
         S3Key: dynamodb_to_redshift.zip
@@ -149,7 +149,7 @@ Resources:
           REDSHIFT_DB_NAME: social_media_db
           REDSHIFT_USERNAME: !Ref RedshiftMasterUsername
 
-  StepFunctionsExecutionRole:
+  StepFunctionsExecutionRoleRandom:
     Type: AWS::IAM::Role
     Properties:
       AssumeRolePolicyDocument:
@@ -174,8 +174,8 @@ Resources:
   SocialMediaSentimentWorkflow:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: SocialMediaSentimentWorkflow
-      RoleArn: !GetAtt StepFunctionsExecutionRole.Arn
+      StateMachineName: !Sub "SocialMediaSentimentWorkflow-${AWS::Region}-${AWS::AccountId}-${AWS::StackName}"
+      RoleArn: !GetAtt StepFunctionsExecutionRoleRandom.Arn
       DefinitionString: !Sub |
         {
           "Comment": "Social Media Sentiment Analysis Workflow",
@@ -233,5 +233,5 @@ Outputs:
 
   StepFunctionsStateMachineArn:
     Description: ARN of the Step Functions State Machine
-    Value: !Ref SocialMediaSentimentWorkflow
+    Value: !Ref SocialMediaSentimentWorkflow${Timestamp}
     
