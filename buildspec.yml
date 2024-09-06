@@ -6,5 +6,11 @@ phases:
       python: 3.8
   build:
     commands:
+      - echo "Starting the build phase..."
       - aws cloudformation deploy --template-file resdap-template.yaml --stack-name resdap-stack --parameter-overrides RedshiftMasterUsername=admin RedshiftMasterUserPassword=$REDSHIFT_PASSWORD --capabilities CAPABILITY_IAM
-      
+      - echo "CloudFormation stack deployment completed"
+
+artifacts:
+  files:
+    - resdap-template.yaml
+  discard-paths: yes
